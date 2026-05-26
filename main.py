@@ -563,6 +563,83 @@ async def update_embeds():
             except:
                 continue
 
+
+
+# =========================
+# !커플초기화
+# =========================
+
+@bot.command(name="커플초기화")
+@commands.has_permissions(administrator=True)
+async def 커플초기화(ctx):
+
+    gid = str(ctx.guild.id)
+
+    if gid not in couples or not couples[gid]:
+
+        await ctx.send(
+            "❌ 초기화할 데이터 없음"
+        )
+        return
+
+    # 역할 원복
+    for data in couples[gid].values():
+
+        user1 = ctx.guild.get_member(
+            data["user1"]
+        )
+
+        user2 = ctx.guild.get_member(
+            data["user2"]
+        )
+
+        if user1 and user2:
+
+            try:
+
+                await update_roles(
+                    ctx.guild,
+                    user1,
+                    user2,
+                    data["type"],
+                    remove=True
+                )
+
+            except:
+                pass
+
+    # 데이터 삭제
+    couples[gid] = {}
+
+    save_data()
+
+    embed = discord.Embed(
+        title="🗑️ 커플 데이터 초기화",
+        description=(
+            "모든 커플/우결 데이터가 "
+            "초기화되었습니다."
+        ),
+        color=discord.Color.red()
+    )
+
+    await ctx.send(embed=embed)
+
+# =========================
+# 권한 없을 때
+# =========================
+
+@커플초기화.error
+async def 커플초기화_error(ctx, error):
+
+    if isinstance(
+        error,
+        commands.MissingPermissions
+    ):
+
+        await ctx.send(
+            "❌ 관리자만 사용 가능합니다."
+        )
+        
 # =========================
 # 실행
 # =========================
